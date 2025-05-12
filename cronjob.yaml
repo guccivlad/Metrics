@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: log-archirver
+spec:
+  schedule: "*/10 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: archirver
+            image: alpine/curl:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              mkdir -p /app/logs
+
+              curl -s -f -o /app/logs/app.log http://server-service/logs
+
+              timestamp=$(date +%Y%m%d%H%M%S)
+              tar -czf /tmp/app-logs-${timestamp}.tar.gz /app/logs/
+              
+              sleep 600
+          restartPolicy: OnFailure

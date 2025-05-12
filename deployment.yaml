@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+  labels:
+    app: server
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+        - image: server:v1.0
+          name: server
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - name: cache-volume
+              mountPath: /app/logs
+          env:
+            - name: LOG_FILE
+              valueFrom:
+                configMapKeyRef:
+                  name: server-config
+                  key: LOG_FILE_PATH
+            - name: WELCOME_MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: server-config
+                  key: WELCOME_MESSAGE
+            - name: SEREVR_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: server-config
+                  key: SERVER_PORT
+
+
+      volumes:
+        - name: cache-volume
+          # emptyDir: {}
+          hostPath:
+            path: /var/log/app
+            type: DirectoryOrCreate

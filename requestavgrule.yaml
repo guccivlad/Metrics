@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: log-request-avg-rule
+  namespace: monitoring
+  labels:
+    release: kube-prom-stack
+spec:
+  groups:
+    - name: log-avg.rules
+      rules:
+        - record: log_request_duration_seconds_avg
+          expr: rate(log_request_duration_seconds_sum[5m]) / rate(log_request_duration_seconds_count[5m])
